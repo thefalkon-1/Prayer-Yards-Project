@@ -53,7 +53,7 @@ create_bar_plot <- function(value, width = 100, height = 20) {
                       gray_bar_y_position, width, gray_bar_height,
                       bar_width, height, color,
                       circle_center_x, height / 2, circle_radius, color,
-                      circle_center_x, height / 2 + 0.75, text_font_size, value)
+                      circle_center_x, ((height / 2) + 3.5), text_font_size, value)
   return(svg_plot)
 }
 
