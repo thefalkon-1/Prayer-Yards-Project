@@ -95,7 +95,7 @@ server <- function(input, output) {
       filter(week >= input$weekInput[1], week <= input$weekInput[2])
     
     re_summed_data <- week_filtered_data %>%
-      group_by(full_name_receiver, receiver_id, posteam) %>%
+      group_by(full_name_receiver, receiver_player_id, posteam) %>%
       summarise(
         ay_catchable = sum(ifelse(is_catchable_ball == "TRUE", air_yards, 0), na.rm = TRUE),
         ay_uncatchable = sum(ifelse(is_catchable_ball == "FALSE", air_yards, 0), na.rm = TRUE),
@@ -107,7 +107,7 @@ server <- function(input, output) {
                                          ay_catchable >= 0 & ay_uncatchable < 0 ~ 0,
                                          .default = ay_uncatchable / total)) %>%
       ungroup() %>%
-      select(-receiver_id) %>%
+      select(-receiver_player_id) %>%
       arrange(-total) %>%
       filter(total > 0) %>%
       mutate(percentile = (rank(-uncatchable_pct, ties.method = "first") / n() * 100))
