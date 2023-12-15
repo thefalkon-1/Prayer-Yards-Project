@@ -89,7 +89,7 @@ ui <- fluidPage(
 
 server <- function(input, output) {
   filtered_data <- reactive({
-    # Filter and summarize your data here
+    # Filter and summarize data here
     week_filtered_data <- new_df %>%
       filter(position_receiver %in% input$positionToggle) %>%
       filter(week >= input$weekInput[1], week <= input$weekInput[2])
@@ -97,9 +97,11 @@ server <- function(input, output) {
     re_summed_data <- week_filtered_data %>%
       group_by(full_name_receiver, receiver_player_id, posteam) %>%
       summarise(
+        #targets = n(),
         ay_catchable = sum(ifelse(is_catchable_ball == "TRUE", air_yards, 0), na.rm = TRUE),
         ay_uncatchable = sum(ifelse(is_catchable_ball == "FALSE", air_yards, 0), na.rm = TRUE),
-        total = ay_catchable + ay_uncatchable
+        total = ay_catchable + ay_uncatchable,
+        #aDOT = total / targets
       ) %>%
       filter(total >= input$minAirYards) %>%
       mutate(uncatchable_pct = case_when(ay_catchable < 0 & ay_uncatchable < 0 ~ 1,
@@ -136,6 +138,13 @@ server <- function(input, output) {
                 total = colDef(name = "Total Air Yards",
                                style = list(fontFamily = "Roboto Condensed"),
                                maxWidth = 150),
+                #targets = colDef(name = "Targets",
+                               #style = list(fontFamily = "Roboto Condensed"),
+                               #maxWidth = 50),
+                #aDOT = colDef(name = "aDOT", 
+                              #format = colFormat(digits = 1),
+                               #style = list(fontFamily = "Roboto Condensed"),
+                               #maxWidth = 50),
                 uncatchable_pct = colDef(name = "Prayer Yards %", 
                                          format = colFormat(percent = TRUE, digits = 1),
                                          style = list(fontFamily = "Roboto Condensed"),
