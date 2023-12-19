@@ -6,6 +6,11 @@ library(scales)
 # Read in dataset
 new_df <- readRDS(gzcon(url("https://github.com/thefalkon-1/Prayer-Yards-Project/raw/main/data/data.rds")))
 
+with_tooltip <- function(value, tooltip) {
+  tags$abbr(style = "text-decoration: underline; text-decoration-style: dotted; cursor: help",
+            title = tooltip, value)
+}
+
 create_bar_plot <- function(value, width = 100, height = 20) {
   # Check if the value is NA or non-numeric
   if (is.na(value) || !is.numeric(value)) {
@@ -79,10 +84,10 @@ ui <- fluidPage(
     ),
     column(10,
            div(style = "padding: 10px 0px;", 
-               "Prayer Yards are the amount of yards a ball traveled in the air (air yards) on passes deemed uncatchable."),
+               "Prayer Yards are the amount of yards a ball traveled in the air (air yards) on passes deemed uncatchable | Data: FTN Data via nflverse"),
            reactableOutput("table"),
            div(style = "padding: 10px 0px;", 
-               "Data: FTN Data via nflverse")
+               "Percentile: Player's relative ranking in terms of prayer yards percentage among qualified pass catchers, where a higher percentile signifies a lower prayer yard percentage.")
     ),
   )
 )
@@ -95,13 +100,13 @@ server <- function(input, output) {
       filter(week >= input$weekInput[1], week <= input$weekInput[2])
     
     re_summed_data <- week_filtered_data %>%
-      group_by(full_name_receiver, receiver_player_id, posteam) %>%
+      group_by(full_name_receiver, receiver_player_id, posteam, team_logo_espn) %>%
       summarise(
-        #targets = n(),
+        targets = n(),
         ay_catchable = sum(ifelse(is_catchable_ball == "TRUE", air_yards, 0), na.rm = TRUE),
         ay_uncatchable = sum(ifelse(is_catchable_ball == "FALSE", air_yards, 0), na.rm = TRUE),
         total = ay_catchable + ay_uncatchable,
-        #aDOT = total / targets
+        aDOT = total / targets
       ) %>%
       filter(total >= input$minAirYards) %>%
       mutate(uncatchable_pct = case_when(ay_catchable < 0 & ay_uncatchable < 0 ~ 1,
@@ -119,37 +124,43 @@ server <- function(input, output) {
   })
   
   output$table <- renderReactable({
-    reactable(filtered_data(), 
+    reactable(filtered_data(),
               # Specify columns and formatting here
-              columns = list(
+              columns = list(team_logo_espn = colDef(cell = function(value, index) {
+                # Assuming 'value' contains the name of the animal
+                # and 'image_url' is the name of the column with the image URLs
+                image_url <- filtered_data()$team_logo_espn[index]
+                image <- img(src = image_url, style = "height: 20px; width: 45px; object-fit: contain;")
+                tagList(
+                  div(style = "display: inline-flex; align-items: center; justify-content: center;", image),
+                )}),
                 full_name_receiver = colDef(name = "Player",
-                                            style = list(fontFamily = "Roboto Condensed"),
                                             minWidth = 100,
-                                            maxWidth = 300),
+                                            maxWidth = 300,
+                                            sticky = "left",
+                                            align = "left",
+                                            style = list(textAlign = "left")),
                 posteam = colDef(name = "Team",
-                                 style = list(fontFamily = "Roboto Condensed"),
                                  maxWidth = 50),
                 ay_catchable = colDef(name = "Catchable Air Yards",
-                                      style = list(fontFamily = "Roboto Condensed"),
-                                      maxWidth = 150),
+                                      maxWidth = 110),
                 ay_uncatchable = colDef(name = "Prayer Yards",
-                                        style = list(fontFamily = "Roboto Condensed"),
-                                        maxWidth = 150),
+                                        maxWidth = 110),
                 total = colDef(name = "Total Air Yards",
-                               style = list(fontFamily = "Roboto Condensed"),
-                               maxWidth = 150),
-                #targets = colDef(name = "Targets",
-                               #style = list(fontFamily = "Roboto Condensed"),
-                               #maxWidth = 50),
-                #aDOT = colDef(name = "aDOT", 
-                              #format = colFormat(digits = 1),
-                               #style = list(fontFamily = "Roboto Condensed"),
-                               #maxWidth = 50),
-                uncatchable_pct = colDef(name = "Prayer Yards %", 
+                               maxWidth = 110),
+                targets = colDef(name = "Targets",
+                               maxWidth = 110),
+                aDOT = colDef(header = with_tooltip("aDOT", 
+                                                    "Average Depth of Target (Yards)"),
+                              format = colFormat(digits = 1),
+                              maxWidth = 110),
+                uncatchable_pct = colDef(header = with_tooltip("Prayer Yards %", 
+                                                               "Percentage of air yards that are prayer yards"),
                                          format = colFormat(percent = TRUE, digits = 1),
-                                         style = list(fontFamily = "Roboto Condensed"),
-                                         maxWidth = 150),
-                percentile = colDef(name = "Percentile",
+                                         style = list(borderLeft = "1px solid #808080"),
+                                         maxWidth = 110),
+                percentile = colDef(header = with_tooltip("Percentile", 
+                                                          "Player's relative ranking in terms of prayer yards percentage among qualified pass catchers, where a higher percentile signifies a lower prayer yard percentage."),
                                     style = list(fontFamily = "sans-serif",
                                                  fontWeight = "bold"),
                                     maxWidth = 125,
@@ -168,15 +179,18 @@ server <- function(input, output) {
               compact = TRUE,
               striped = TRUE,
               borderless = TRUE,
+              defaultColDef = colDef(style = list(fontFamily = "Roboto Condensed",
+                                                  textAlign = "center"),
+                                     align = "center"),
               defaultSorted = c("total"),
               defaultSortOrder = "desc",
               theme = reactableTheme(
                 borderColor = "black",
-                headerStyle = list(textAlign = "right",
-                                   fontSize = 12),
-                tableBodyStyle = list(textAlign = "right",
-                  fontSize = 14)
-              )
+                headerStyle = list(fontSize = 12),
+                tableBodyStyle = list(fontSize = 14),
+                cellStyle = list(paddingTop = 2,
+                                 paddingBottom = 2),
+                rowStyle = list(marginBottom = -6))
     )
   })
 }
