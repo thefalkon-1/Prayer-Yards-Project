@@ -100,7 +100,7 @@ server <- function(input, output) {
       filter(week >= input$weekInput[1], week <= input$weekInput[2])
     
     re_summed_data <- week_filtered_data %>%
-      group_by(full_name_receiver, receiver_player_id, posteam, team_logo_espn) %>%
+      group_by(full_name_receiver, receiver_player_id, posteam, team_wordmark) %>%
       summarise(
         targets = n(),
         ay_catchable = sum(ifelse(is_catchable_ball == "TRUE", air_yards, 0), na.rm = TRUE),
@@ -126,13 +126,13 @@ server <- function(input, output) {
   output$table <- renderReactable({
     reactable(filtered_data(),
               # Specify columns and formatting here
-              columns = list(team_logo_espn = colDef(cell = function(value, index) {
+              columns = list(team_wordmark = colDef(cell = function(value, index) {
                 # Assuming 'value' contains the name of the animal
                 # and 'image_url' is the name of the column with the image URLs
-                image_url <- filtered_data()$team_logo_espn[index]
-                image <- img(src = image_url, style = "height: 20px; width: 45px; object-fit: contain;")
+                image_url <- filtered_data()$team_wordmark[index]
+                image <- img(src = image_url, style = "height: 25px; width: 25px;")
                 tagList(
-                  div(style = "display: inline-flex; align-items: center; justify-content: center;", image),
+                  div(style = "display: inline-flex;", image),
                 )}),
                 full_name_receiver = colDef(name = "Player",
                                             minWidth = 100,
