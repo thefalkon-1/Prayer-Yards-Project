@@ -1,0 +1,10 @@
+name: air-yards-leaderboard
+title:
+username: thefalkon
+account: thefalkon
+server: shinyapps.io
+hostUrl: https://api.shinyapps.io/v1
+appId: 10836801
+bundleId: 8073802
+url: https://thefalkon.shinyapps.io/air-yards-leaderboard/
+version: 1
