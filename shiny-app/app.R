@@ -100,9 +100,10 @@ server <- function(input, output) {
       filter(week >= input$weekInput[1], week <= input$weekInput[2])
     
     re_summed_data <- week_filtered_data %>%
-      group_by(full_name_receiver, receiver_player_id, posteam, team_wordmark) %>%
+      group_by(full_name_receiver, receiver_player_id, posteam, team_logo_espn) %>%
       summarise(
         targets = n(),
+        receptions = sum(complete_pass, na.rm = T),
         ay_catchable = sum(ifelse(is_catchable_ball == "TRUE", air_yards, 0), na.rm = TRUE),
         ay_uncatchable = sum(ifelse(is_catchable_ball == "FALSE", air_yards, 0), na.rm = TRUE),
         total = ay_catchable + ay_uncatchable,
@@ -126,39 +127,43 @@ server <- function(input, output) {
   output$table <- renderReactable({
     reactable(filtered_data(),
               # Specify columns and formatting here
-              columns = list(team_wordmark = colDef(cell = function(value, index) {
-                # Assuming 'value' contains the name of the animal
-                # and 'image_url' is the name of the column with the image URLs
-                image_url <- filtered_data()$team_wordmark[index]
-                image <- img(src = image_url, style = "height: 25px; width: 25px;")
+              columns = list(team_logo_espn = colDef(name = "Team", 
+                                                     maxWidth = 100,
+                                                     cell = function(value, index) {
+                image_url <- filtered_data()$team_logo_espn[index]
+                team_name <- paste0("  ", filtered_data()$posteam[index])
+                image <- img(src = image_url, style = "height: 25px; width: 25px; vertical-align: middle;")
+                text_span <- span(team_name, style = "vertical-align: middle; display: inline-block;")
                 tagList(
-                  div(style = "display: inline-flex;", image),
+                  div(image, " ", text_span)
                 )}),
                 full_name_receiver = colDef(name = "Player",
-                                            minWidth = 100,
-                                            maxWidth = 300,
+                                            minWidth = 160,
                                             sticky = "left",
                                             align = "left",
                                             style = list(textAlign = "left")),
                 posteam = colDef(name = "Team",
-                                 maxWidth = 50),
+                                 maxWidth = 50,
+                                 show = FALSE),
                 ay_catchable = colDef(name = "Catchable Air Yards",
-                                      maxWidth = 110),
+                                      maxWidth = 130),
                 ay_uncatchable = colDef(name = "Prayer Yards",
-                                        maxWidth = 110),
+                                        maxWidth = 100),
                 total = colDef(name = "Total Air Yards",
-                               maxWidth = 110),
+                               maxWidth = 100),
                 targets = colDef(name = "Targets",
-                               maxWidth = 110),
+                               maxWidth = 100),
+                receptions = colDef(name = "Receptions",
+                                 maxWidth = 100),
                 aDOT = colDef(header = with_tooltip("aDOT", 
                                                     "Average Depth of Target (Yards)"),
                               format = colFormat(digits = 1),
-                              maxWidth = 110),
+                              maxWidth = 100),
                 uncatchable_pct = colDef(header = with_tooltip("Prayer Yards %", 
                                                                "Percentage of air yards that are prayer yards"),
                                          format = colFormat(percent = TRUE, digits = 1),
                                          style = list(borderLeft = "1px solid #808080"),
-                                         maxWidth = 110),
+                                         maxWidth = 100),
                 percentile = colDef(header = with_tooltip("Percentile", 
                                                           "Player's relative ranking in terms of prayer yards percentage among qualified pass catchers, where a higher percentile signifies a lower prayer yard percentage."),
                                     style = list(fontFamily = "sans-serif",
@@ -181,16 +186,20 @@ server <- function(input, output) {
               borderless = TRUE,
               defaultColDef = colDef(style = list(fontFamily = "Roboto Condensed",
                                                   textAlign = "center"),
-                                     align = "center"),
+                                     align = "center",
+                                     headerVAlign = "bottom"),
               defaultSorted = c("total"),
               defaultSortOrder = "desc",
               theme = reactableTheme(
                 borderColor = "black",
                 headerStyle = list(fontSize = 12),
                 tableBodyStyle = list(fontSize = 14),
-                cellStyle = list(paddingTop = 2,
-                                 paddingBottom = 2),
-                rowStyle = list(marginBottom = -6))
+                cellStyle = list(textAlign = "center",
+                                 paddingTop = 0,
+                                 paddingBottom = 0),
+                rowStyle = list(marginBottom = -4,
+                                paddingTop = 0,
+                                paddingBottom = 0))
     )
   })
 }
