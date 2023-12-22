@@ -52,6 +52,8 @@ create_bar_plot <- function(value, width = 100, height = 20) {
   gray_bar_height <- height / 5
   gray_bar_y_position <- (height - gray_bar_height) / 2
   
+  text_dy <- "0.3em" 
+  
   # Create an inline SVG for the bar plot
   svg_plot <- sprintf("<svg width='%f' height='%f' viewBox='0 0 %f %f' xmlns='http://www.w3.org/2000/svg' xmlns:xlink='http://www.w3.org/1999/xlink'>
                         <defs>
@@ -62,13 +64,13 @@ create_bar_plot <- function(value, width = 100, height = 20) {
                         <rect x='0' y='%f' width='%f' height='%f' fill='lightgrey'/>
                         <rect x='0' y='0' width='%f' height='%f' fill='%s'/>
                         <circle cx='%f' cy='%f' r='%f' fill='%s' stroke='white' stroke-width='1.25'/>
-                        <text x='%f' y='%f' font-size='%f' fill='white' font-weight='bold' text-anchor='middle' alignment-baseline='middle' filter='url(#shadow)'>%.0f</text>
+                        <text x='%f' y='%f' font-size='%f' fill='white' font-weight='bold' text-anchor='middle' dominant-baseline='middle' filter='url(#shadow)'>%.0f</text>
                       </svg>", 
                       width, height, width, height,
                       gray_bar_y_position, width, gray_bar_height,
                       bar_width, height, color,
                       circle_center_x, height / 2, circle_radius, color,
-                      circle_center_x, ((height / 2) + 3.5), text_font_size, value)
+                      circle_center_x, ((height / 2) + 1), text_font_size, value)
   return(svg_plot)
   
   
@@ -92,7 +94,7 @@ ui <- navbarPage(
                     numericInput("minTargets", "Minimum Targets:", 
                                  min = 1, max = 2000, value = 10, step = 10),
                     numericInput("minAirYards", "Minimum Total Air Yards:", 
-                                 min = 0, max = 2000, value = 100, step = 10),
+                                 min = 0, max = 2000, value = 250, step = 10),
                     checkboxGroupInput("positionToggle", "Position",
                                        choices = c("WR", "TE", "RB"),
                                        selected = c("WR", "TE"))
