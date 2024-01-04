@@ -6,7 +6,7 @@ library(reactablefmtr)
 library(MetBrewer)
 
 # Read in dataset
-new_df <- readRDS(gzcon(url("https://github.com/thefalkon-1/Prayer-Yards-Project/raw/main/data/data.rds")))
+new_df <- readRDS(gzcon(url("https://github.com/thefalkon-1/Prayer-Yards-Project/raw/main/data/data010424.rds")))
 
 max_week <- max(new_df$week)
 
