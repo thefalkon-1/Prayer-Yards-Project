@@ -142,10 +142,6 @@ server <- function(input, output) {
       filter(position_receiver %in% input$positionToggle) %>%
       filter(week >= input$weekInput[1], week <= input$weekInput[2])
     
-    if (length(input$teamInput) >= 1) {
-      week_filtered_data <- week_filtered_data %>%
-        filter(posteam %in% input$teamInput)
-    }
     
     re_summed_data <- week_filtered_data %>%
       group_by(full_name_receiver, receiver_player_id, posteam, team_logo_espn) %>%
@@ -167,6 +163,11 @@ server <- function(input, output) {
       arrange(-total) %>%
       filter(total > 0) %>%
       mutate(percentile = (rank(catchable_pct, ties.method = "first") / n() * 100))
+    
+    if (length(input$teamInput) >= 1) {
+      re_summed_data <- re_summed_data %>%
+        filter(posteam %in% input$teamInput)
+    }
     
     
     re_summed_data
