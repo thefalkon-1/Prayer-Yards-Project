@@ -97,7 +97,16 @@ ui <- navbarPage(
                                  min = 0, max = 2000, value = 250, step = 10),
                     checkboxGroupInput("positionToggle", "Position",
                                        choices = c("WR", "TE", "RB"),
-                                       selected = c("WR", "TE"))
+                                       selected = c("WR", "TE")),
+                    selectizeInput(
+                      inputId = "teamInput",
+                      label = "Team",
+                      choices = c("ARI", "ATL", "BAL", "BUF", "CAR", "CHI", "CIN", "CLE", 
+                                  "DAL", "DEN", "DET", "GB",  "HOU", "IND", "JAX", "KC",  "LA",  "LAC",
+                                  "LV",  "MIA", "MIN", "NE",  "NO",  "NYG", "NYJ", "PHI", "PIT", "SEA", 
+                                  "SF",  "TB",  "TEN", "WAS"),
+                      multiple = TRUE
+                    )
              ),
              column(10,
                     div(style = "padding: 10px 0px;", 
@@ -132,6 +141,11 @@ server <- function(input, output) {
     week_filtered_data <- new_df %>%
       filter(position_receiver %in% input$positionToggle) %>%
       filter(week >= input$weekInput[1], week <= input$weekInput[2])
+    
+    if (length(input$teamInput) >= 0) {
+      week_filtered_data <- week_filtered_data %>%
+        filter(posteam %in% input$teamInput)
+    }
     
     re_summed_data <- week_filtered_data %>%
       group_by(full_name_receiver, receiver_player_id, posteam, team_logo_espn) %>%
