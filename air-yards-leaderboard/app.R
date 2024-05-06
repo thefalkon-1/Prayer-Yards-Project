@@ -142,7 +142,7 @@ server <- function(input, output) {
       filter(position_receiver %in% input$positionToggle) %>%
       filter(week >= input$weekInput[1], week <= input$weekInput[2])
     
-    if (length(input$teamInput) >= 0) {
+    if (length(input$teamInput) >= 1) {
       week_filtered_data <- week_filtered_data %>%
         filter(posteam %in% input$teamInput)
     }
